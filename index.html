@@ -1,0 +1,2891 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fish Frenzy - Feeding Frenzy Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #000428, #004e92);
+            padding: 10px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            background: rgba(0, 20, 40, 0.9);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 30px rgba(0, 168, 255, 0.5);
+            border: 2px solid #00a8ff;
+            backdrop-filter: blur(5px);
+        }
+        
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 8px #00a8ff;
+            font-size: 2rem;
+            background: linear-gradient(to bottom, #4dffff, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(0, 168, 255, 0.3);
+            width: 100%;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 8px;
+            gap: 5px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: bold;
+            gap: 5px;
+        }
+        
+        .info-item {
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            padding: 8px 10px;
+            border-radius: 8px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 168, 255, 0.3);
+            border: 1px solid #4dffff;
+            min-width: 80px;
+        }
+        
+        .control-button {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+            min-width: 100px;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+        
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .control-button.secondary {
+            background: linear-gradient(135deg, #4dff88, #00ff88);
+        }
+        
+        .control-button.secondary:hover {
+            box-shadow: 0 4px 12px rgba(77, 255, 136, 0.4);
+        }
+        
+        #gameCanvas {
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 168, 255, 0.4);
+            cursor: none;
+            border: 1px solid #00a8ff;
+            width: 100%;
+            height: 400px;
+            background-color: rgba(0, 50, 80, 0.3);
+            touch-action: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            z-index: 1000;
+            box-shadow: 0 3px 15px rgba(255, 107, 107, 0.5);
+            border: 1px solid #ffcccc;
+            display: none;
+        }
+        
+        .menu-screen, .game-over-screen, .level-up-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 30, 60, 0.95);
+            color: white;
+            z-index: 20;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .menu-title {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #4dffff, #00a8ff, #4dffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(77, 255, 255, 0.4);
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .button {
+            background: linear-gradient(to bottom, #00a8ff, #0097e6);
+            border: none;
+            padding: 12px 25px;
+            margin: 8px;
+            border-radius: 40px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 168, 255, 0.4);
+            text-transform: uppercase;
+            user-select: none;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 168, 255, 0.5);
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .difficulty-selector h3 {
+            color: #4dffff;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .difficulty-options {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .difficulty-option {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.15), rgba(77, 255, 255, 0.08));
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border: 1px solid transparent;
+            color: white;
+            font-size: 1rem;
+            user-select: none;
+        }
+        
+        .difficulty-option:hover {
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.25), rgba(77, 255, 255, 0.15));
+            border-color: rgba(0, 168, 255, 0.3);
+        }
+        
+        .difficulty-option.selected {
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            border-color: #4dffff;
+            box-shadow: 0 5px 15px rgba(0, 168, 255, 0.4);
+        }
+        
+        .instructions {
+            background: rgba(0, 168, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            max-width: 600px;
+            text-align: center;
+            color: #e0f7ff;
+            line-height: 1.4;
+            border: 1px solid rgba(0, 168, 255, 0.2);
+            font-size: 0.95rem;
+        }
+        
+        .fish-evolution-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 15px 0;
+        }
+        
+        .fish-evolution-container h3 {
+            color: #4dffff;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        
+        .fish-evolution {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(0, 20, 40, 0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 168, 255, 0.2);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .fish-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.15), rgba(77, 255, 255, 0.08));
+            padding: 8px;
+            border-radius: 8px;
+            min-width: 90px;
+            border: 1px solid rgba(0, 168, 255, 0.2);
+        }
+        
+        .fish-icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            overflow: hidden;
+            background: rgba(0, 50, 80, 0.3);
+            border: 1px solid rgba(77, 255, 255, 0.3);
+            font-size: 1.8rem;
+        }
+        
+        .fish-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .controls-info {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(0, 0, 0, 0.25);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 168, 255, 0.3);
+            width: 100%;
+            max-width: 550px;
+        }
+        
+        .controls-display {
+            display: flex;
+            justify-content: center;
+            margin-top: 8px;
+            gap: 8px;
+        }
+        
+        .key {
+            background: linear-gradient(to bottom, #00a8ff, #0097e6);
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 168, 255, 0.3);
+            border: 1px solid #4dffff;
+            transition: all 0.2s;
+        }
+        
+        .key.active {
+            background: linear-gradient(to bottom, #4dffff, #00a8ff);
+            box-shadow: 0 0 10px rgba(77, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+        
+        .game-over-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ff6b6b, #ff4757, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .final-score {
+            font-size: 1.4rem;
+            margin: 10px 0;
+            color: #4dffff;
+            text-align: center;
+        }
+        
+        .evolution-progress-container {
+            width: 100%;
+            max-width: 550px;
+            margin: 8px 0;
+        }
+        
+        .evolution-progress {
+            width: 100%;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 168, 255, 0.3);
+            margin-bottom: 3px;
+        }
+        
+        .evolution-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00a8ff, #4dffff, #00a8ff);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .evolution-text {
+            color: white;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .level-up-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #4dff88, #00ff88, #4dff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(77, 255, 136, 0.4);
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .new-fish {
+            font-size: 1.4rem;
+            margin: 10px 0;
+            color: #4dffff;
+        }
+        
+        .life-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            justify-content: center;
+        }
+        
+        .life-icon {
+            width: 20px;
+            height: 20px;
+            background: #ff6b6b;
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            box-shadow: 0 0 4px rgba(255, 107, 107, 0.7);
+        }
+        
+        .menu-content, .game-over-content, .level-up-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .power-up-effect {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            z-index: 10;
+            animation: powerUpAnim 1s ease-out;
+        }
+        
+        /* MOBILE CONTROLS STYLES */
+        .mobile-controls {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin-top: 15px;
+            touch-action: none;
+        }
+        
+        .analog-stick {
+            position: absolute;
+            bottom: 20px;
+            left: 30px;
+            width: 110px;
+            height: 110px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            border: 2px solid rgba(0, 168, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 168, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .analog-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00a8ff, #0097e6);
+            border-radius: 50%;
+            border: 2px solid #4dffff;
+            box-shadow: 0 0 15px rgba(0, 168, 255, 0.6);
+            transition: transform 0.1s ease;
+            z-index: 11;
+        }
+        
+        .action-buttons {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .action-button {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            border-radius: 50%;
+            border: 2px solid #ffcccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            user-select: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+        }
+        
+        .action-button:active {
+            transform: scale(0.9);
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.6);
+        }
+        
+        .action-button.speed {
+            background: linear-gradient(135deg, #4dff88, #00ff88);
+            border-color: #88ffaa;
+        }
+        
+        .control-hint {
+            margin-top: 10px;
+            color: #4dffff;
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        @keyframes powerUpAnim {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 10px;
+                max-width: 95%;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            #gameCanvas {
+                height: 350px;
+            }
+            
+            .menu-title, .game-over-title, .level-up-title {
+                font-size: 1.8rem;
+            }
+            
+            .difficulty-options {
+                flex-direction: column;
+            }
+            
+            .fish-evolution {
+                padding: 8px;
+                gap: 6px;
+            }
+            
+            .fish-stage {
+                min-width: 75px;
+                padding: 6px;
+            }
+            
+            .fish-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+            
+            .controls-info {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            .mobile-controls {
+                display: block;
+            }
+            
+            .game-controls {
+                flex-wrap: wrap;
+            }
+            
+            .control-button {
+                flex: 1;
+                min-width: 80px;
+                font-size: 0.8rem;
+                padding: 8px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #gameCanvas {
+                height: 300px;
+            }
+            
+            .analog-stick {
+                width: 100px;
+                height: 100px;
+                bottom: 15px;
+                left: 20px;
+            }
+            
+            .analog-knob {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .action-button {
+                width: 55px;
+                height: 55px;
+                font-size: 1.3rem;
+            }
+            
+            .action-buttons {
+                bottom: 20px;
+                right: 20px;
+                gap: 12px;
+            }
+            
+            .mobile-controls {
+                height: 150px;
+            }
+            
+            .game-info {
+                font-size: 0.8rem;
+            }
+            
+            .info-item {
+                padding: 6px 8px;
+                min-width: 70px;
+            }
+        }
+        
+        /* Prevent text selection on mobile */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="no-select">
+    <div class="notification" id="notification">⚠️ GAME OVER! ⚠️</div>
+    
+    <div class="game-container">
+        <h1>🐠 Fish Frenzy 🌊</h1>
+        
+        <div class="game-controls">
+            <button id="pauseButton" class="control-button">⏸️ JEDA</button>
+            <button id="restartQuickButton" class="control-button secondary">🔄 RESTART</button>
+        </div>
+        
+        <div class="game-info">
+            <div class="info-item">🏆 Score: <span id="score">0</span></div>
+            <div class="info-item">⭐ Level: <span id="level">1</span></div>
+            <div class="info-item">🐡 Fish: <span id="fishType">Baby Fish</span></div>
+            <div class="info-item">⚡ Combo: <span id="combo">1x</span></div>
+        </div>
+        
+        <div class="evolution-progress-container">
+            <div class="evolution-progress">
+                <div id="evolutionFill" class="evolution-fill"></div>
+            </div>
+            <div class="evolution-text">Evolusi ke level berikutnya: <span id="evolutionPercent">0</span>%</div>
+        </div>
+        
+        <div class="life-container" id="lifeContainer">
+            <div class="life-icon"></div>
+            <div class="life-icon"></div>
+            <div class="life-icon"></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <!-- Kontrol Mobile -->
+        <div class="mobile-controls" id="mobileControls">
+            <div class="analog-stick" id="analogStick">
+                <div class="analog-knob" id="analogKnob"></div>
+            </div>
+            <div class="action-buttons">
+                <div class="action-button" id="speedButton">⚡</div>
+                <div class="action-button speed" id="pauseMobileButton">⏸️</div>
+            </div>
+            <div class="control-hint">Geser joystick untuk bergerak • Tekan untuk boost/jeda</div>
+        </div>
+        
+        <div class="controls-info">
+            <div>🎮 Gunakan <strong>W A S D</strong> atau <strong>Arrow Keys</strong> untuk bergerak. Makan ikan yang lebih kecil!</div>
+            <div class="controls-display">
+                <div class="key" id="keyW">W</div>
+                <div class="key" id="keyA">A</div>
+                <div class="key" id="keyS">S</div>
+                <div class="key" id="keyD">D</div>
+            </div>
+        </div>
+        
+        <!-- Menu Utama -->
+        <div id="menuScreen" class="menu-screen">
+            <div class="menu-content">
+                <div class="menu-title">🐠 Fish Frenzy 🐟</div>
+                
+                <div class="instructions">
+                    🐟 <strong>ATURAN PERMAINAN:</strong> Makan ikan yang lebih kecil untuk tumbuh! Hindari ikan yang lebih besar.
+                    ⭐ Kumpulkan power-up untuk keuntungan khusus. Evolusi melalui 8 tahap menjadi penguasa lautan! 🌊
+                </div>
+                
+                <div class="difficulty-selector">
+                    <h3>🎯 PILIH TINGKAT KESULITAN:</h3>
+                    <div class="difficulty-options">
+                        <div class="difficulty-option selected" data-difficulty="easy">😊 MUDAH</div>
+                        <div class="difficulty-option" data-difficulty="medium">😐 NORMAL</div>
+                        <div class="difficulty-option" data-difficulty="hard">😎 SULIT</div>
+                    </div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="startButton" class="button">🎮 MULAI PERMAINAN</button>
+                </div>
+                
+                <!-- EVOLUSI IKAN -->
+                <div class="fish-evolution-container">
+                    <h3>📈 EVOLUSI IKAN:</h3>
+                    <div class="fish-evolution" id="fishEvolution">
+                        <!-- Fish stages akan dimuat oleh JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="controls-info" style="margin-top: 20px;">
+                    📱 <strong>KONTROL MOBILE:</strong> Gunakan joystick di kiri untuk bergerak. Tombol di kanan untuk speed boost dan jeda.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="game-over-screen hidden">
+            <div class="game-over-content">
+                <div class="game-over-title">💀 GAME OVER 💀</div>
+                <div class="final-score">🏆 SKOR AKHIR: <span id="finalScore">0</span></div>
+                <div class="final-score">⭐ LEVEL TERTINGGI: <span id="finalLevel">1</span></div>
+                <div class="final-score">🐡 EVOLUSI: <span id="finalEvolution">Baby Fish</span></div>
+                
+                <div class="button-container">
+                    <button id="restartButton" class="button">🔄 MAIN LAGI</button>
+                    <button id="menuButton" class="button">🏠 KEMBALI KE MENU</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Level Up Screen -->
+        <div id="levelUpScreen" class="level-up-screen hidden">
+            <div class="level-up-content">
+                <div class="level-up-title">🎉 LEVEL UP! 🎊</div>
+                <div class="new-fish">🐡 EVOLUSI MENJADI: <span id="newFishType">Clownfish</span></div>
+                <div class="final-score">⚡ Ukuran dan kecepatan meningkat! 🚀</div>
+                
+                <div id="levelUpFishImage" style="width: 100px; height: 100px; margin: 15px 0; display: flex; align-items: center; justify-content: center;">
+                    <!-- Gambar akan dimasukkan oleh JavaScript -->
+                </div>
+                
+                <div class="button-container">
+                    <button id="continueButton" class="button">▶️ LANJUTKAN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preload gambar ikan dan musuh dari folder images/
+        const fishImages = {};
+        const enemyImages = {};
+        
+        // URL gambar untuk ikan pemain - menggunakan gambar lokal dari folder images/
+        const fishImageUrls = {
+            'Baby Fish': 'images/nemo aja.png',
+            'Clownfish': 'images/piranha.png',
+            'Angel Fish': 'images/angler fish.png',
+            'Barracuda': 'images/barracuda.png',
+            'Hammerhead': 'images/hammerhead.png',
+            'Tiger Shark': 'images/hiu putih.png',
+            'Great White': 'images/orca.png',
+            'Killer Whale': 'images/paus biru.png'
+        };
+        
+        // URL gambar untuk musuh - menggunakan gambar lokal dari folder images/
+        const enemyImageUrls = {
+            'Ubur-ubur': 'images/ubur ubur.png',
+            'Raja Kepiting': 'images/raja kepiting.png',
+            'Piranha': 'images/piranha.png',
+            'Gurita Kecil': 'images/kraken.png',
+            'Hiu Ganas': 'images/hiu ganas.png',
+            'Ikan Pari': 'images/ikan pari.png',
+            'Kraken': 'images/kraken.png',
+            'Hiu Putih Raksasa': 'images/megalodon.png',
+            'Kuda Laut Besi': 'images/kuda laut.png',
+            'Ikan Pedang': 'images/ikan pedang.png'
+        };
+        
+        // Emoji fallback untuk setiap jenis ikan (jika gambar tidak ditemukan)
+        const fishEmojis = {
+            'Baby Fish': '🐠',
+            'Clownfish': '🐠',
+            'Angel Fish': '🐠',
+            'Barracuda': '🐬',
+            'Hammerhead': '🦈',
+            'Tiger Shark': '🦈',
+            'Great White': '🦈',
+            'Killer Whale': '🐋',
+            'Ubur-ubur': '🦑',
+            'Raja Kepiting': '🦀',
+            'Piranha': '🐟',
+            'Gurita Kecil': '🐙',
+            'Hiu Ganas': '🦈',
+            'Ikan Pari': '🐠',
+            'Kraken': '🐙',
+            'Hiu Putih Raksasa': '🦈',
+            'Kuda Laut Besi': '🐎',
+            'Ikan Pedang': '🐟'
+        };
+        
+        // Load semua gambar
+        function loadImages() {
+            const imagePromises = [];
+            
+            // Load fish images
+            Object.keys(fishImageUrls).forEach(fishName => {
+                const img = new Image();
+                img.src = fishImageUrls[fishName];
+                fishImages[fishName] = img;
+                imagePromises.push(new Promise(resolve => {
+                    img.onload = () => {
+                        console.log(`Gambar ${fishName} berhasil dimuat`);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn(`Gambar ${fishName} gagal dimuat, menggunakan fallback`);
+                        // Jika gambar gagal dimuat, buat gambar fallback sederhana
+                        fishImages[fishName] = createFallbackImage(fishName, '#4DFFFF');
+                        resolve();
+                    };
+                }));
+            });
+            
+            // Load enemy images
+            Object.keys(enemyImageUrls).forEach(enemyName => {
+                const img = new Image();
+                img.src = enemyImageUrls[enemyName];
+                enemyImages[enemyName] = img;
+                imagePromises.push(new Promise(resolve => {
+                    img.onload = () => {
+                        console.log(`Gambar ${enemyName} berhasil dimuat`);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn(`Gambar ${enemyName} gagal dimuat, menggunakan fallback`);
+                        // Jika gambar gagal dimuat, buat gambar fallback sederhana
+                        enemyImages[enemyName] = createFallbackImage(enemyName, '#FF6B6B');
+                        resolve();
+                    };
+                }));
+            });
+            
+            return Promise.all(imagePromises);
+        }
+        
+        // Fungsi untuk membuat gambar fallback jika file tidak ditemukan
+        function createFallbackImage(name, color) {
+            // Membuat canvas untuk gambar fallback
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Gambar lingkaran sederhana dengan warna
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(50, 50, 40, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tambahkan teks nama singkat
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Potong nama jika terlalu panjang
+            const shortName = name.split(' ')[0];
+            ctx.fillText(shortName, 50, 50);
+            
+            // Konversi canvas ke Image
+            const img = new Image();
+            img.src = canvas.toDataURL();
+            return img;
+        }
+        
+        // Game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menuScreen = document.getElementById('menuScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const levelUpScreen = document.getElementById('levelUpScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const menuButton = document.getElementById('menuButton');
+        const continueButton = document.getElementById('continueButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const restartQuickButton = document.getElementById('restartQuickButton');
+        const notification = document.getElementById('notification');
+        const mobileControls = document.getElementById('mobileControls');
+        const analogStick = document.getElementById('analogStick');
+        const analogKnob = document.getElementById('analogKnob');
+        const speedButton = document.getElementById('speedButton');
+        const pauseMobileButton = document.getElementById('pauseMobileButton');
+        
+        const difficultyOptions = document.querySelectorAll('.difficulty-option');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const fishTypeElement = document.getElementById('fishType');
+        const comboElement = document.getElementById('combo');
+        const evolutionFill = document.getElementById('evolutionFill');
+        const evolutionPercent = document.getElementById('evolutionPercent');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalLevelElement = document.getElementById('finalLevel');
+        const finalEvolutionElement = document.getElementById('finalEvolution');
+        const newFishTypeElement = document.getElementById('newFishType');
+        const lifeContainer = document.getElementById('lifeContainer');
+        const keyW = document.getElementById('keyW');
+        const keyA = document.getElementById('keyA');
+        const keyS = document.getElementById('keyS');
+        const keyD = document.getElementById('keyD');
+        const fishEvolution = document.getElementById('fishEvolution');
+        
+        // Fish types data
+        const fishTypes = [
+            { 
+                name: 'Baby Fish', 
+                size: 20, 
+                speed: 3.5, 
+                canEat: 0,
+                scoreValue: 10,
+                color: '#4DFFFF'
+            },
+            { 
+                name: 'Clownfish', 
+                size: 28, 
+                speed: 3.8, 
+                canEat: 1,
+                scoreValue: 20,
+                color: '#FF9F43'
+            },
+            { 
+                name: 'Angel Fish', 
+                size: 36, 
+                speed: 3.6, 
+                canEat: 2,
+                scoreValue: 30,
+                color: '#546DE5'
+            },
+            { 
+                name: 'Barracuda', 
+                size: 48, 
+                speed: 4.0, 
+                canEat: 3,
+                scoreValue: 50,
+                color: '#10AC84'
+            },
+            { 
+                name: 'Hammerhead', 
+                size: 65, 
+                speed: 3.8, 
+                canEat: 4,
+                scoreValue: 75,
+                color: '#00D2D3'
+            },
+            { 
+                name: 'Tiger Shark', 
+                size: 85, 
+                speed: 4.2, 
+                canEat: 5,
+                scoreValue: 100,
+                color: '#FECA57'
+            },
+            { 
+                name: 'Great White', 
+                size: 100, 
+                speed: 4.0, 
+                canEat: 6,
+                scoreValue: 150,
+                color: '#C8D6E5'
+            },
+            { 
+                name: 'Killer Whale', 
+                size: 120, 
+                speed: 3.6, 
+                canEat: 7,
+                scoreValue: 200,
+                color: '#8395A7'
+            }
+        ];
+        
+        // Special enemies data
+        const specialEnemies = [
+            {
+                name: 'Ubur-ubur',
+                size: 45,
+                speed: 1.8,
+                color: '#9370DB',
+                scoreValue: 150,
+                behavior: 'slow',
+                spawnLevel: 2,
+                spawnChance: 0.25,
+                isEnemy: true
+            },
+            {
+                name: 'Raja Kepiting',
+                size: 70,
+                speed: 2.2,
+                color: '#FF4500',
+                scoreValue: 300,
+                behavior: 'charging',
+                spawnLevel: 3,
+                spawnChance: 0.2,
+                isEnemy: true
+            },
+            {
+                name: 'Piranha',
+                size: 30,
+                speed: 3.5,
+                color: '#FF0000',
+                scoreValue: 200,
+                behavior: 'aggressive',
+                spawnLevel: 2,
+                spawnChance: 0.3,
+                isEnemy: true
+            },
+            {
+                name: 'Gurita Kecil',
+                size: 50,
+                speed: 2.0,
+                color: '#800080',
+                scoreValue: 250,
+                behavior: 'wandering',
+                spawnLevel: 3,
+                spawnChance: 0.25,
+                isEnemy: true
+            },
+            {
+                name: 'Hiu Ganas',
+                size: 90,
+                speed: 3.0,
+                color: '#333333',
+                scoreValue: 400,
+                behavior: 'hunter',
+                spawnLevel: 4,
+                spawnChance: 0.15,
+                isEnemy: true
+            },
+            {
+                name: 'Ikan Pari',
+                size: 60,
+                speed: 2.8,
+                color: '#228B22',
+                scoreValue: 350,
+                behavior: 'gliding',
+                spawnLevel: 3,
+                spawnChance: 0.2,
+                isEnemy: true
+            },
+            {
+                name: 'Kraken',
+                size: 150,
+                speed: 1.5,
+                color: '#000080',
+                scoreValue: 1000,
+                behavior: 'boss',
+                spawnLevel: 5,
+                spawnChance: 0.1,
+                isEnemy: true
+            },
+            {
+                name: 'Hiu Putih Raksasa',
+                size: 130,
+                speed: 2.8,
+                color: '#FFFFFF',
+                scoreValue: 800,
+                behavior: 'hunter',
+                spawnLevel: 6,
+                spawnChance: 0.08,
+                isEnemy: true
+            },
+            {
+                name: 'Kuda Laut Besi',
+                size: 40,
+                speed: 2.5,
+                color: '#8B4513',
+                scoreValue: 180,
+                behavior: 'slow',
+                spawnLevel: 2,
+                spawnChance: 0.35,
+                isEnemy: true
+            },
+            {
+                name: 'Ikan Pedang',
+                size: 80,
+                speed: 4.0,
+                color: '#00CED1',
+                scoreValue: 500,
+                behavior: 'charging',
+                spawnLevel: 4,
+                spawnChance: 0.12,
+                isEnemy: true
+            }
+        ];
+        
+        // Background elements
+        let backgroundElements = [];
+        
+        // Game state
+        let game = {
+            running: false,
+            score: 0,
+            level: 1,
+            fishType: 'Baby Fish',
+            difficulty: 'easy',
+            gameSpeed: 1,
+            player: null,
+            foods: [],
+            enemies: [],
+            specialEnemies: [],
+            powerUps: [],
+            particles: [],
+            lastFoodSpawn: 0,
+            lastEnemySpawn: 0,
+            lastSpecialSpawn: 0,
+            lastPowerUpSpawn: 0,
+            combo: 1,
+            comboTimeout: null,
+            lives: 3,
+            invincible: false,
+            invincibleTimeout: null,
+            evolutionProgress: 0,
+            requiredEvolution: 100,
+            keys: {
+                w: false,
+                a: false,
+                s: false,
+                d: false
+            },
+            // Mobile controls
+            touchControls: {
+                active: false,
+                touchId: null,
+                stickX: 0,
+                stickY: 0,
+                maxRadius: 45,
+                speedActive: false,
+                speedTimeout: null
+            }
+        };
+        
+        let lastTime = 0;
+        let isPaused = false;
+        let frameCount = 0;
+        let imagesLoaded = false;
+        let isMobileDevice = false;
+        
+        // Initialize game
+        async function initializeGame() {
+            // Detect mobile device
+            isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // Load images first
+            try {
+                await loadImages();
+                imagesLoaded = true;
+                console.log('Semua gambar berhasil dimuat');
+            } catch (error) {
+                console.error('Error loading images:', error);
+            }
+            
+            // Setup fish evolution display dengan gambar
+            setupFishEvolution();
+            
+            menuScreen.classList.remove('hidden');
+            
+            // Set default difficulty
+            game.difficulty = 'easy';
+            game.gameSpeed = 0.8;
+            game.lives = 4;
+            updateLivesDisplay();
+            
+            // Create background elements
+            createBackgroundElements();
+            
+            // Initialize touch controls
+            initTouchControls();
+            
+            initGame();
+        }
+        
+        // Initialize touch controls
+        function initTouchControls() {
+            const stickRect = analogStick.getBoundingClientRect();
+            game.touchControls.centerX = stickRect.left + stickRect.width / 2;
+            game.touchControls.centerY = stickRect.top + stickRect.height / 2;
+            game.touchControls.stickRadius = stickRect.width / 2;
+            
+            // Touch events for analog stick
+            analogStick.addEventListener('touchstart', handleTouchStart, { passive: false });
+            analogStick.addEventListener('touchmove', handleTouchMove, { passive: false });
+            analogStick.addEventListener('touchend', handleTouchEnd, { passive: false });
+            analogStick.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+            
+            // Mouse events for desktop testing
+            analogStick.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            
+            // Action buttons
+            speedButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                activateSpeedBoost();
+            }, { passive: false });
+            
+            speedButton.addEventListener('touchend', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            pauseMobileButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                togglePauseMobile();
+            }, { passive: false });
+            
+            // Mouse events for action buttons
+            speedButton.addEventListener('mousedown', () => activateSpeedBoost());
+            pauseMobileButton.addEventListener('mousedown', () => togglePauseMobile());
+            
+            // Prevent context menu on mobile
+            analogStick.addEventListener('contextmenu', (e) => e.preventDefault());
+            speedButton.addEventListener('contextmenu', (e) => e.preventDefault());
+            pauseMobileButton.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        
+        // Touch event handlers
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (game.touchControls.active) return;
+            
+            const touch = e.touches[0];
+            game.touchControls.active = true;
+            game.touchControls.touchId = touch.identifier;
+            updateStickPosition(touch.clientX, touch.clientY);
+        }
+        
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!game.touchControls.active) return;
+            
+            // Find the correct touch
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i];
+                if (touch.identifier === game.touchControls.touchId) {
+                    updateStickPosition(touch.clientX, touch.clientY);
+                    break;
+                }
+            }
+        }
+        
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            game.touchControls.active = false;
+            game.touchControls.touchId = null;
+            resetStickPosition();
+            
+            // Reset keyboard controls
+            game.keys.w = false;
+            game.keys.a = false;
+            game.keys.s = false;
+            game.keys.d = false;
+            updateKeyDisplay();
+        }
+        
+        // Mouse event handlers (for desktop testing)
+        function handleMouseDown(e) {
+            e.preventDefault();
+            game.touchControls.active = true;
+            updateStickPosition(e.clientX, e.clientY);
+            
+            // Prevent default to avoid text selection
+            return false;
+        }
+        
+        function handleMouseMove(e) {
+            if (!game.touchControls.active) return;
+            e.preventDefault();
+            updateStickPosition(e.clientX, e.clientY);
+        }
+        
+        function handleMouseUp(e) {
+            if (!game.touchControls.active) return;
+            e.preventDefault();
+            game.touchControls.active = false;
+            resetStickPosition();
+            
+            // Reset keyboard controls
+            game.keys.w = false;
+            game.keys.a = false;
+            game.keys.s = false;
+            game.keys.d = false;
+            updateKeyDisplay();
+        }
+        
+        // Update stick position
+        function updateStickPosition(clientX, clientY) {
+            const stickRect = analogStick.getBoundingClientRect();
+            const centerX = stickRect.left + stickRect.width / 2;
+            const centerY = stickRect.top + stickRect.height / 2;
+            
+            let deltaX = clientX - centerX;
+            let deltaY = clientY - centerY;
+            
+            // Calculate distance from center
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxRadius = game.touchControls.stickRadius - 30; // Account for knob size
+            
+            // Limit to max radius
+            if (distance > maxRadius) {
+                deltaX = (deltaX / distance) * maxRadius;
+                deltaY = (deltaY / distance) * maxRadius;
+            }
+            
+            // Update knob position
+            analogKnob.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+            
+            // Update game controls based on stick position
+            const threshold = maxRadius * 0.3; // Deadzone
+            
+            // Reset all keys first
+            game.keys.w = false;
+            game.keys.a = false;
+            game.keys.s = false;
+            game.keys.d = false;
+            
+            if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
+                // Horizontal movement
+                if (deltaX < -threshold) {
+                    game.keys.a = true; // Left
+                } else if (deltaX > threshold) {
+                    game.keys.d = true; // Right
+                }
+                
+                // Vertical movement
+                if (deltaY < -threshold) {
+                    game.keys.w = true; // Up
+                } else if (deltaY > threshold) {
+                    game.keys.s = true; // Down
+                }
+                
+                // Normalize for diagonal movement
+                const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (magnitude > 0) {
+                    const normalizedX = deltaX / magnitude;
+                    const normalizedY = deltaY / magnitude;
+                    
+                    // Adjust for intensity (farther from center = faster)
+                    const intensity = Math.min(magnitude / maxRadius, 1);
+                    
+                    // Store normalized values for player movement
+                    game.touchControls.stickX = normalizedX * intensity;
+                    game.touchControls.stickY = normalizedY * intensity;
+                }
+            } else {
+                game.touchControls.stickX = 0;
+                game.touchControls.stickY = 0;
+            }
+            
+            updateKeyDisplay();
+        }
+        
+        // Reset stick position
+        function resetStickPosition() {
+            analogKnob.style.transform = 'translate(-50%, -50%)';
+            game.touchControls.stickX = 0;
+            game.touchControls.stickY = 0;
+        }
+        
+        // Activate speed boost from mobile button
+        function activateSpeedBoost() {
+            if (!game.running || isPaused) return;
+            
+            // Visual feedback
+            speedButton.style.transform = 'scale(0.85)';
+            setTimeout(() => {
+                speedButton.style.transform = 'scale(1)';
+            }, 200);
+            
+            // Apply speed boost
+            game.player.speed *= 1.8;
+            showNotification('⚡ SPEED BOOST!');
+            
+            // Reset after 1.5 seconds
+            if (game.touchControls.speedTimeout) {
+                clearTimeout(game.touchControls.speedTimeout);
+            }
+            
+            game.touchControls.speedTimeout = setTimeout(() => {
+                game.player.speed = fishTypes[game.player.typeIndex].speed;
+            }, 1500);
+        }
+        
+        // Toggle pause from mobile button
+        function togglePauseMobile() {
+            if (!game.running) return;
+            
+            isPaused = !isPaused;
+            pauseButton.textContent = isPaused ? '▶️ LANJUT' : '⏸️ JEDA';
+            pauseMobileButton.textContent = isPaused ? '▶️' : '⏸️';
+            
+            // Visual feedback
+            pauseMobileButton.style.transform = 'scale(0.85)';
+            setTimeout(() => {
+                pauseMobileButton.style.transform = 'scale(1)';
+            }, 200);
+            
+            if (isPaused) {
+                showNotification('⏸️ PAUSED');
+            }
+        }
+        
+        // Setup fish evolution display dengan gambar
+        function setupFishEvolution() {
+            fishEvolution.innerHTML = '';
+            
+            // Tambahkan semua stage ikan
+            fishTypes.forEach((fish, index) => {
+                const stage = document.createElement('div');
+                stage.className = 'fish-stage';
+                
+                const icon = document.createElement('div');
+                icon.className = 'fish-icon';
+                
+                // Coba muat gambar lokal
+                if (fishImages[fish.name] && imagesLoaded) {
+                    const img = document.createElement('img');
+                    img.src = fishImages[fish.name].src;
+                    img.alt = fish.name;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    icon.appendChild(img);
+                } else {
+                    // Fallback ke emoji jika gambar tidak ada
+                    icon.textContent = fishEmojis[fish.name] || '🐟';
+                    icon.style.fontSize = '1.5rem';
+                    icon.style.display = 'flex';
+                    icon.style.alignItems = 'center';
+                    icon.style.justifyContent = 'center';
+                }
+                
+                const name = document.createElement('div');
+                name.className = 'fish-stage-name';
+                name.textContent = fish.name;
+                
+                const level = document.createElement('div');
+                level.className = 'fish-stage-level';
+                level.textContent = `Level ${index + 1}`;
+                
+                stage.appendChild(icon);
+                stage.appendChild(name);
+                stage.appendChild(level);
+                fishEvolution.appendChild(stage);
+            });
+            
+            // Tambahkan beberapa musuh spesial
+            specialEnemies.slice(0, 3).forEach(enemy => {
+                const stage = document.createElement('div');
+                stage.className = 'fish-stage';
+                
+                const icon = document.createElement('div');
+                icon.className = 'fish-icon';
+                
+                if (enemyImages[enemy.name] && imagesLoaded) {
+                    const img = document.createElement('img');
+                    img.src = enemyImages[enemy.name].src;
+                    img.alt = enemy.name;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    icon.appendChild(img);
+                } else {
+                    icon.textContent = fishEmojis[enemy.name] || '👾';
+                    icon.style.fontSize = '1.5rem';
+                    icon.style.display = 'flex';
+                    icon.style.alignItems = 'center';
+                    icon.style.justifyContent = 'center';
+                }
+                
+                const name = document.createElement('div');
+                name.className = 'fish-stage-name';
+                name.textContent = enemy.name;
+                
+                const level = document.createElement('div');
+                level.className = 'fish-stage-level';
+                level.textContent = 'Musuh';
+                
+                stage.appendChild(icon);
+                stage.appendChild(name);
+                stage.appendChild(level);
+                fishEvolution.appendChild(stage);
+            });
+        }
+        
+        // Create background elements
+        function createBackgroundElements() {
+            backgroundElements = [];
+            
+            // Create coral reefs
+            for (let i = 0; i < 8; i++) {
+                backgroundElements.push({
+                    type: 'coral',
+                    x: Math.random() * canvas.width,
+                    y: canvas.height - 40 + Math.random() * 20,
+                    size: 20 + Math.random() * 30,
+                    color: ['#FF6B8B', '#FF9F43', '#FF4757', '#FF9FF3'][Math.floor(Math.random() * 4)],
+                    sway: Math.random() * Math.PI * 2
+                });
+            }
+            
+            // Create sea plants
+            for (let i = 0; i < 12; i++) {
+                backgroundElements.push({
+                    type: 'plant',
+                    x: Math.random() * canvas.width,
+                    y: canvas.height - 30,
+                    height: 30 + Math.random() * 50,
+                    width: 3 + Math.random() * 4,
+                    color: ['#2ECC71', '#1DD1A1', '#10AC84'][Math.floor(Math.random() * 3)],
+                    sway: Math.random() * Math.PI * 2
+                });
+            }
+            
+            // Create sea shells
+            for (let i = 0; i < 6; i++) {
+                backgroundElements.push({
+                    type: 'shell',
+                    x: Math.random() * canvas.width,
+                    y: canvas.height - 25,
+                    size: 10 + Math.random() * 15,
+                    color: ['#FF9FF3', '#F368E0', '#FF6B8B'][Math.floor(Math.random() * 3)],
+                });
+            }
+            
+            // Create rocks
+            for (let i = 0; i < 10; i++) {
+                backgroundElements.push({
+                    type: 'rock',
+                    x: Math.random() * canvas.width,
+                    y: canvas.height - 20 + Math.random() * 10,
+                    size: 15 + Math.random() * 25,
+                    color: '#8395A7',
+                });
+            }
+        }
+        
+        // Initialize difficulty selection
+        difficultyOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                game.difficulty = option.getAttribute('data-difficulty');
+                
+                switch(game.difficulty) {
+                    case 'easy': 
+                        game.gameSpeed = 0.8;
+                        game.lives = 4;
+                        break;
+                    case 'medium': 
+                        game.gameSpeed = 1;
+                        game.lives = 3;
+                        break;
+                    case 'hard': 
+                        game.gameSpeed = 1.3;
+                        game.lives = 2;
+                        break;
+                }
+                
+                updateLivesDisplay();
+            });
+        });
+        
+        // Player fish class dengan gambar - DIUPDATE UNTUK MOBILE
+        class Player {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.size = fishTypes[0].size;
+                this.color = fishTypes[0].color;
+                this.speed = fishTypes[0].speed;
+                this.typeIndex = 0;
+                this.type = fishTypes[0].name;
+                this.canEat = fishTypes[0].canEat;
+                this.scoreValue = fishTypes[0].scoreValue;
+                this.image = fishImages[fishTypes[0].name];
+                
+                this.vx = 0;
+                this.vy = 0;
+                this.acceleration = 0.28;
+                this.friction = 0.89;
+                
+                this.floatAngle = 0;
+                this.floatSpeed = 0.05;
+                this.floatAmount = 3;
+                
+                this.direction = 1;
+                
+                // Mobile control smoothing
+                this.mobileInputX = 0;
+                this.mobileInputY = 0;
+                this.inputSmoothing = 0.15;
+            }
+            
+            update(deltaTime) {
+                if (isPaused) return;
+                
+                // Smooth mobile input
+                this.mobileInputX += (game.touchControls.stickX - this.mobileInputX) * this.inputSmoothing;
+                this.mobileInputY += (game.touchControls.stickY - this.mobileInputY) * this.inputSmoothing;
+                
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                
+                // Combine keyboard and mobile controls
+                const inputX = (game.keys.d ? 1 : 0) - (game.keys.a ? 1 : 0) + this.mobileInputX;
+                const inputY = (game.keys.s ? 1 : 0) - (game.keys.w ? 1 : 0) + this.mobileInputY;
+                
+                // Apply acceleration based on combined input
+                if (Math.abs(inputX) > 0.1 || Math.abs(inputY) > 0.1) {
+                    this.vx += inputX * this.acceleration * deltaTime;
+                    this.vy += inputY * this.acceleration * deltaTime;
+                }
+                
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                const maxSpeed = this.speed * game.gameSpeed * deltaTime * 0.8;
+                if (speed > maxSpeed) {
+                    const ratio = maxSpeed / speed;
+                    this.vx *= ratio;
+                    this.vy *= ratio;
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Update direction based on movement
+                if (this.vx < -0.5) {
+                    this.direction = -1;
+                } else if (this.vx > 0.5) {
+                    this.direction = 1;
+                }
+                
+                const bounceDamping = 0.7;
+                if (this.x < this.size) {
+                    this.x = this.size;
+                    this.vx = Math.abs(this.vx) * bounceDamping;
+                }
+                if (this.x > canvas.width - this.size) {
+                    this.x = canvas.width - this.size;
+                    this.vx = -Math.abs(this.vx) * bounceDamping;
+                }
+                if (this.y < this.size) {
+                    this.y = this.size;
+                    this.vy = Math.abs(this.vy) * bounceDamping;
+                }
+                if (this.y > canvas.height - this.size) {
+                    this.y = canvas.height - this.size;
+                    this.vy = -Math.abs(this.vy) * bounceDamping;
+                }
+                
+                this.floatAngle += this.floatSpeed * deltaTime;
+            }
+            
+            draw() {
+                const floatY = Math.sin(this.floatAngle) * this.floatAmount;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y + floatY);
+                
+                // Flip image based on direction
+                if (this.direction === -1) {
+                    ctx.scale(-1, 1);
+                }
+                
+                // Draw image jika tersedia
+                if (this.image && this.image.complete) {
+                    // Gambar dengan efek bayangan
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    ctx.drawImage(this.image, -this.size, -this.size, this.size * 2, this.size * 2);
+                    
+                    // Reset shadow
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Fallback ke bentuk sederhana jika gambar tidak ada
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tambahkan mata
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(this.size * 0.3, 0, this.size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw invincibility effect
+                if (game.invincible) {
+                    ctx.strokeStyle = '#FFFF00';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+            
+            checkFoodCollision(food) {
+                const dx = this.x - food.x;
+                const dy = this.y - food.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                return distance < this.size * 0.5 + food.size * 0.5 && food.size < this.size * 0.9;
+            }
+            
+            checkEnemyCollision(enemy) {
+                if (game.invincible) return false;
+                
+                const dx = this.x - enemy.x;
+                const dy = this.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                return distance < this.size * 0.5 + enemy.size * 0.5 && enemy.size > this.size * 1.2;
+            }
+            
+            checkSpecialEnemyCollision(enemy) {
+                if (game.invincible) return false;
+                
+                const dx = this.x - enemy.x;
+                const dy = this.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const collisionSize = enemy.behavior === 'boss' ? 1.3 : 1.25;
+                return distance < this.size * 0.5 + enemy.size * 0.5 && enemy.size > this.size * collisionSize;
+            }
+            
+            checkPowerUpCollision(powerUp) {
+                const dx = this.x - powerUp.x;
+                const dy = this.y - powerUp.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                return distance < this.size * 0.5 + powerUp.size;
+            }
+        }
+        
+        // [Food, Enemy, SpecialEnemy, PowerUp classes tetap sama seperti sebelumnya]
+        // Food fish class dengan gambar
+        class Food {
+            constructor() {
+                this.type = Math.floor(Math.random() * Math.min(game.player.typeIndex + 2, fishTypes.length));
+                this.size = fishTypes[this.type].size * (0.4 + Math.random() * 0.3);
+                this.color = fishTypes[this.type].color;
+                this.image = fishImages[fishTypes[this.type].name];
+                this.value = fishTypes[this.type].scoreValue;
+                this.special = Math.random() < 0.08;
+                
+                if (this.special) {
+                    this.value *= 2.5;
+                    this.color = '#FFD700';
+                }
+                
+                const side = Math.floor(Math.random() * 4);
+                const padding = 50;
+                switch(side) {
+                    case 0:
+                        this.x = Math.random() * (canvas.width - padding * 2) + padding;
+                        this.y = -this.size;
+                        break;
+                    case 1:
+                        this.x = canvas.width + this.size;
+                        this.y = Math.random() * (canvas.height - padding * 2) + padding;
+                        break;
+                    case 2:
+                        this.x = Math.random() * (canvas.width - padding * 2) + padding;
+                        this.y = canvas.height + this.size;
+                        break;
+                    case 3:
+                        this.x = -this.size;
+                        this.y = Math.random() * (canvas.height - padding * 2) + padding;
+                        break;
+                }
+                
+                this.vx = (Math.random() - 0.5) * 1.2 * game.gameSpeed;
+                this.vy = (Math.random() - 0.5) * 1.2 * game.gameSpeed;
+                this.speed = 0.6 + Math.random() * 0.5;
+                
+                this.floatAngle = Math.random() * Math.PI * 2;
+                this.floatSpeed = 0.02 + Math.random() * 0.02;
+                this.floatAmount = 2;
+                
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+            }
+            
+            update(deltaTime) {
+                if (isPaused) return;
+                
+                this.x += this.vx * deltaTime;
+                this.y += this.vy * deltaTime;
+                
+                this.floatAngle += this.floatSpeed * deltaTime;
+                
+                if (frameCount % 30 === 0 && Math.random() < 0.3) {
+                    this.vx += (Math.random() - 0.5) * 0.15;
+                    this.vy += (Math.random() - 0.5) * 0.15;
+                }
+                
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > this.speed * 2) {
+                    this.vx = (this.vx / speed) * this.speed * 2;
+                    this.vy = (this.vy / speed) * this.speed * 2;
+                }
+                
+                const damping = 0.85;
+                if (this.x < this.size) {
+                    this.x = this.size;
+                    this.vx = Math.abs(this.vx) * damping;
+                }
+                if (this.x > canvas.width - this.size) {
+                    this.x = canvas.width - this.size;
+                    this.vx = -Math.abs(this.vx) * damping;
+                }
+                if (this.y < this.size) {
+                    this.y = this.size;
+                    this.vy = Math.abs(this.vy) * damping;
+                }
+                if (this.y > canvas.height - this.size) {
+                    this.y = canvas.height + this.size;
+                    this.vy = -Math.abs(this.vy) * damping;
+                }
+                
+                return this.x < -200 || this.x > canvas.width + 200 || 
+                       this.y < -200 || this.y > canvas.height + 200;
+            }
+            
+            draw() {
+                const floatY = Math.sin(this.floatAngle) * this.floatAmount;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y + floatY);
+                
+                // Flip image randomly
+                if (this.direction === -1) {
+                    ctx.scale(-1, 1);
+                }
+                
+                // Draw image jika tersedia
+                if (this.image && this.image.complete) {
+                    ctx.drawImage(this.image, -this.size, -this.size, this.size * 2, this.size * 2);
+                } else {
+                    // Fallback ke circle jika gambar tidak ada
+                    ctx.fillStyle = this.special ? '#FFD700' : this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Enemy fish class dengan gambar
+        class Enemy {
+            constructor() {
+                const baseType = Math.min(
+                    game.player.typeIndex + Math.floor(Math.random() * 3) + 1,
+                    fishTypes.length - 1
+                );
+                this.type = Math.max(baseType, 1);
+                
+                this.size = fishTypes[this.type].size * (1.2 + Math.random() * 0.3);
+                this.color = fishTypes[this.type].color;
+                this.image = fishImages[fishTypes[this.type].name];
+                this.aggro = Math.random() < (game.difficulty === 'hard' ? 0.4 : 0.25);
+                
+                const side = Math.floor(Math.random() * 4);
+                const padding = 100;
+                switch(side) {
+                    case 0:
+                        this.x = Math.random() * (canvas.width - padding * 2) + padding;
+                        this.y = -this.size;
+                        break;
+                    case 1:
+                        this.x = canvas.width + this.size;
+                        this.y = Math.random() * (canvas.height - padding * 2) + padding;
+                        break;
+                    case 2:
+                        this.x = Math.random() * (canvas.width - padding * 2) + padding;
+                        this.y = canvas.height + this.size;
+                        break;
+                    case 3:
+                        this.x = -this.size;
+                        this.y = Math.random() * (canvas.height - padding * 2) + padding;
+                        break;
+                }
+                
+                const dx = game.player.x - this.x;
+                const dy = game.player.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const baseSpeed = game.difficulty === 'hard' ? 1.2 : 0.9;
+                this.vx = (dx / Math.max(distance, 1)) * (baseSpeed + Math.random() * 0.4) * game.gameSpeed;
+                this.vy = (dy / Math.max(distance, 1)) * (baseSpeed + Math.random() * 0.4) * game.gameSpeed;
+                
+                this.floatAngle = Math.random() * Math.PI * 2;
+                this.floatSpeed = 0.025 + Math.random() * 0.02;
+                this.floatAmount = 3;
+                
+                this.aggression = (game.difficulty === 'hard' ? 0.6 : 0.4) + Math.random() * 0.3;
+                
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+            }
+            
+            update(deltaTime) {
+                if (isPaused) return;
+                
+                if (this.aggro && frameCount % 20 === 0 && Math.random() < 0.15 * this.aggression) {
+                    const dx = game.player.x - this.x;
+                    const dy = game.player.y - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 0) {
+                        const chaseStrength = game.difficulty === 'hard' ? 0.35 : 0.25;
+                        this.vx += (dx / distance) * chaseStrength * this.aggression * deltaTime;
+                        this.vy += (dy / distance) * chaseStrength * this.aggression * deltaTime;
+                    }
+                }
+                
+                if (frameCount % 30 === 0 && Math.random() < 0.3) {
+                    this.vx += (Math.random() - 0.5) * 0.25;
+                    this.vy += (Math.random() - 0.5) * 0.25;
+                }
+                
+                this.x += this.vx * deltaTime;
+                this.y += this.vy * deltaTime;
+                
+                this.floatAngle += this.floatSpeed * deltaTime;
+                
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                const maxSpeed = (game.difficulty === 'hard' ? 2.8 : 2.2) * game.gameSpeed;
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+                
+                const damping = 0.8;
+                if (this.x < this.size) {
+                    this.x = this.size;
+                    this.vx = Math.abs(this.vx) * damping;
+                }
+                if (this.x > canvas.width - this.size) {
+                    this.x = canvas.width - this.size;
+                    this.vx = -Math.abs(this.vx) * damping;
+                }
+                if (this.y < this.size) {
+                    this.y = this.size;
+                    this.vy = Math.abs(this.vy) * damping;
+                }
+                if (this.y > canvas.height - this.size) {
+                    this.y = canvas.height - this.size;
+                    this.vy = -Math.abs(this.vy) * damping;
+                }
+                
+                return this.x < -300 || this.x > canvas.width + 300 || 
+                       this.y < -300 || this.y > canvas.height + 300;
+            }
+            
+            draw() {
+                const floatY = Math.sin(this.floatAngle) * this.floatAmount;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y + floatY);
+                
+                // Determine direction based on movement
+                if (this.vx < 0) {
+                    this.direction = -1;
+                } else if (this.vx > 0) {
+                    this.direction = 1;
+                }
+                
+                if (this.direction === -1) {
+                    ctx.scale(-1, 1);
+                }
+                
+                // Draw image jika tersedia
+                if (this.image && this.image.complete) {
+                    ctx.drawImage(this.image, -this.size, -this.size, this.size * 2, this.size * 2);
+                } else {
+                    // Fallback ke circle jika gambar tidak ada
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Special Enemy class dengan gambar
+        class SpecialEnemy {
+            constructor(typeIndex) {
+                const enemyData = specialEnemies[typeIndex];
+                this.typeIndex = typeIndex;
+                this.name = enemyData.name;
+                this.size = enemyData.size * (0.9 + Math.random() * 0.2);
+                this.color = enemyData.color;
+                this.image = enemyImages[enemyData.name];
+                this.speed = enemyData.speed * game.gameSpeed;
+                this.behavior = enemyData.behavior;
+                this.scoreValue = enemyData.scoreValue;
+                
+                const side = Math.floor(Math.random() * 4);
+                const offset = 100;
+                switch(side) {
+                    case 0:
+                        this.x = Math.random() * canvas.width;
+                        this.y = -this.size - offset;
+                        break;
+                    case 1:
+                        this.x = canvas.width + this.size + offset;
+                        this.y = Math.random() * canvas.height;
+                        break;
+                    case 2:
+                        this.x = Math.random() * canvas.width;
+                        this.y = canvas.height + this.size + offset;
+                        break;
+                    case 3:
+                        this.x = -this.size - offset;
+                        this.y = Math.random() * canvas.height;
+                        break;
+                }
+                
+                this.vx = (Math.random() - 0.5) * this.speed * 0.5;
+                this.vy = (Math.random() - 0.5) * this.speed * 0.5;
+                
+                this.floatAngle = Math.random() * Math.PI * 2;
+                this.floatSpeed = 0.02 + Math.random() * 0.02;
+                this.floatAmount = this.behavior === 'boss' ? 5 : 3;
+                
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+            }
+            
+            update(deltaTime) {
+                if (isPaused) return;
+                
+                switch(this.behavior) {
+                    case 'slow':
+                        if (frameCount % 30 === 0 && Math.random() < 0.3) {
+                            this.vx += (Math.random() - 0.5) * 0.2;
+                            this.vy += (Math.random() - 0.5) * 0.2;
+                        }
+                        break;
+                        
+                    case 'charging':
+                        if (frameCount % 60 === 0 && Math.random() < 0.3) {
+                            const dx = game.player.x - this.x;
+                            const dy = game.player.y - this.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance > 0) {
+                                this.vx = (dx / distance) * this.speed * 3;
+                                this.vy = (dy / distance) * this.speed * 3;
+                            }
+                        }
+                        break;
+                        
+                    case 'aggressive':
+                        if (frameCount % 30 === 0) {
+                            const dx = game.player.x - this.x;
+                            const dy = game.player.y - this.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance > 0) {
+                                this.vx += (dx / distance) * 0.1;
+                                this.vy += (dy / distance) * 0.1;
+                            }
+                        }
+                        break;
+                        
+                    case 'wandering':
+                        if (frameCount % 45 === 0) {
+                            this.vx += (Math.random() - 0.5) * 0.3;
+                            this.vy += (Math.random() - 0.5) * 0.3;
+                        }
+                        break;
+                        
+                    case 'hunter':
+                        const dx = game.player.x - this.x;
+                        const dy = game.player.y - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 0) {
+                            this.vx += (dx / distance) * 0.05;
+                            this.vy += (dy / distance) * 0.05;
+                        }
+                        break;
+                        
+                    case 'gliding':
+                        if (frameCount % 60 === 0) {
+                            this.vx += (Math.random() - 0.5) * 0.4;
+                            this.vy += (Math.random() - 0.5) * 0.2;
+                        }
+                        break;
+                        
+                    case 'boss':
+                        const bossDx = game.player.x - this.x;
+                        const bossDy = game.player.y - this.y;
+                        const bossDistance = Math.sqrt(bossDx * bossDx + bossDy * bossDy);
+                        
+                        if (frameCount % 15 === 0) {
+                            if (bossDistance > 200) {
+                                this.vx += (bossDx / bossDistance) * 0.05;
+                                this.vy += (bossDy / bossDistance) * 0.05;
+                            } else if (bossDistance < 150) {
+                                this.vx -= (bossDx / bossDistance) * 0.05;
+                                this.vy -= (bossDy / bossDistance) * 0.05;
+                            }
+                        }
+                        break;
+                }
+                
+                this.x += this.vx * deltaTime;
+                this.y += this.vy * deltaTime;
+                
+                this.floatAngle += this.floatSpeed * deltaTime;
+                
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                const maxSpeed = this.speed * (this.behavior === 'charging' ? 4 : 2.5);
+                if (speed > maxSpeed) {
+                    this.vx = (this.vx / speed) * maxSpeed;
+                    this.vy = (this.vy / speed) * maxSpeed;
+                }
+                
+                const damping = 0.85;
+                if (this.x < this.size) {
+                    this.x = this.size;
+                    this.vx = Math.abs(this.vx) * damping;
+                }
+                if (this.x > canvas.width - this.size) {
+                    this.x = canvas.width - this.size;
+                    this.vx = -Math.abs(this.vx) * damping;
+                }
+                if (this.y < this.size) {
+                    this.y = this.size;
+                    this.vy = Math.abs(this.vy) * damping;
+                }
+                if (this.y > canvas.height - this.size) {
+                    this.y = canvas.height - this.size;
+                    this.vy = -Math.abs(this.vy) * damping;
+                }
+                
+                return this.x < -400 || this.x > canvas.width + 400 || 
+                       this.y < -400 || this.y > canvas.height + 400;
+            }
+            
+            draw() {
+                const floatY = Math.sin(this.floatAngle) * this.floatAmount;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y + floatY);
+                
+                // Determine direction
+                if (this.vx < 0) {
+                    this.direction = -1;
+                } else if (this.vx > 0) {
+                    this.direction = 1;
+                }
+                
+                if (this.direction === -1) {
+                    ctx.scale(-1, 1);
+                }
+                
+                // Draw image jika tersedia
+                if (this.image && this.image.complete) {
+                    ctx.drawImage(this.image, -this.size, -this.size, this.size * 2, this.size * 2);
+                } else {
+                    // Fallback ke circle jika gambar tidak ada
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Power-up class
+        class PowerUp {
+            constructor(type) {
+                this.type = type;
+                this.x = Math.random() * (canvas.width - 80) + 40;
+                this.y = Math.random() * (canvas.height - 80) + 40;
+                this.size = 18;
+                
+                this.colors = ['#4DFF88', '#4DFFFF', '#FFCC00'];
+                this.icons = ['⚡', '🛡️', '⭐'];
+                this.names = ['SPEED', 'SHIELD', 'SCORE x2'];
+                this.color = this.colors[type];
+                this.icon = this.icons[type];
+                this.name = this.names[type];
+                
+                this.floatAngle = Math.random() * Math.PI * 2;
+                this.floatSpeed = 0.05;
+                this.floatAmount = 5;
+                
+                this.rotation = 0;
+                this.rotationSpeed = 0.02;
+                
+                this.life = 450;
+            }
+            
+            update() {
+                if (isPaused) return;
+                
+                this.floatAngle += this.floatSpeed;
+                this.rotation += this.rotationSpeed;
+                this.life--;
+                
+                return this.life <= 0;
+            }
+            
+            draw() {
+                const floatY = Math.sin(this.floatAngle) * this.floatAmount;
+                
+                ctx.save();
+                ctx.translate(this.x, this.y + floatY);
+                ctx.rotate(this.rotation);
+                
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                gradient.addColorStop(0, this.color + 'FF');
+                gradient.addColorStop(1, this.color + 'AA');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.icon, 0, 0);
+                
+                ctx.restore();
+            }
+        }
+        
+        // Initialize game
+        function initGame() {
+            game.player = new Player();
+            game.foods = [];
+            game.enemies = [];
+            game.specialEnemies = [];
+            game.powerUps = [];
+            game.particles = [];
+            game.score = 0;
+            game.level = 1;
+            game.evolutionProgress = 0;
+            game.player.typeIndex = 0;
+            game.combo = 1;
+            game.requiredEvolution = 100;
+            
+            switch(game.difficulty) {
+                case 'easy': 
+                    game.lives = 4;
+                    game.gameSpeed = 0.8;
+                    break;
+                case 'medium': 
+                    game.lives = 3;
+                    game.gameSpeed = 1;
+                    break;
+                case 'hard': 
+                    game.lives = 2;
+                    game.gameSpeed = 1.3;
+                    break;
+            }
+            
+            scoreElement.textContent = game.score;
+            levelElement.textContent = game.level;
+            fishTypeElement.textContent = game.player.type;
+            comboElement.textContent = `${game.combo}x`;
+            updateEvolutionProgress();
+            updateLivesDisplay();
+            
+            game.keys = { w: false, a: false, s: false, d: false };
+            game.touchControls.active = false;
+            game.touchControls.stickX = 0;
+            game.touchControls.stickY = 0;
+            resetStickPosition();
+            updateKeyDisplay();
+            
+            if (game.comboTimeout) clearTimeout(game.comboTimeout);
+            if (game.invincibleTimeout) clearTimeout(game.invincibleTimeout);
+            if (game.touchControls.speedTimeout) clearTimeout(game.touchControls.speedTimeout);
+            game.invincible = false;
+            
+            isPaused = false;
+            pauseButton.textContent = '⏸️ JEDA';
+            pauseMobileButton.textContent = '⏸️';
+            
+            lastTime = performance.now();
+            frameCount = 0;
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Gambar latar belakang dasar
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(0, 50, 100, 0.4)');
+            gradient.addColorStop(1, 'rgba(0, 20, 40, 0.7)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Pasir dasar laut
+            ctx.fillStyle = 'rgba(194, 178, 128, 0.4)';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            
+            // Efek tekstur pasir
+            ctx.fillStyle = 'rgba(210, 180, 140, 0.5)';
+            for (let i = 0; i < 20; i++) {
+                const x = (i * 40 + frameCount * 0.2) % canvas.width;
+                const size = 2 + Math.sin(i + frameCount * 0.01) * 1;
+                ctx.beginPath();
+                ctx.arc(x, canvas.height - 20, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw background elements
+            backgroundElements.forEach(element => {
+                ctx.save();
+                
+                switch(element.type) {
+                    case 'coral':
+                        element.sway += 0.01;
+                        const swayY = Math.sin(element.sway) * 3;
+                        
+                        ctx.fillStyle = element.color + 'CC';
+                        ctx.beginPath();
+                        ctx.moveTo(element.x, element.y + swayY);
+                        ctx.lineTo(element.x - element.size * 0.5, element.y - element.size + swayY);
+                        ctx.lineTo(element.x + element.size * 0.5, element.y - element.size * 0.7 + swayY);
+                        ctx.lineTo(element.x, element.y - element.size * 0.3 + swayY);
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                        
+                    case 'plant':
+                        element.sway += 0.02;
+                        const swayX = Math.sin(element.sway) * 2;
+                        
+                        ctx.fillStyle = element.color + 'CC';
+                        ctx.beginPath();
+                        ctx.moveTo(element.x + swayX, element.y);
+                        ctx.quadraticCurveTo(
+                            element.x + swayX + 5, 
+                            element.y - element.height * 0.3,
+                            element.x + swayX, 
+                            element.y - element.height
+                        );
+                        ctx.quadraticCurveTo(
+                            element.x + swayX - 5, 
+                            element.y - element.height * 0.7,
+                            element.x + swayX, 
+                            element.y
+                        );
+                        ctx.fill();
+                        break;
+                        
+                    case 'shell':
+                        ctx.fillStyle = element.color + 'CC';
+                        ctx.beginPath();
+                        ctx.ellipse(element.x, element.y, element.size, element.size * 0.6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                        
+                    case 'rock':
+                        ctx.fillStyle = element.color + 'CC';
+                        ctx.beginPath();
+                        ctx.arc(element.x, element.y, element.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+                
+                ctx.restore();
+            });
+            
+            // Gelembung udara
+            if (frameCount % 30 === 0) {
+                for (let i = 0; i < 3; i++) {
+                    const x = Math.random() * canvas.width;
+                    const size = 2 + Math.random() * 3;
+                    const speed = 0.5 + Math.random() * 0.5;
+                    
+                    game.particles.push({
+                        x: x,
+                        y: canvas.height - 40,
+                        size: size,
+                        speed: -speed,
+                        life: 100,
+                        color: 'rgba(77, 255, 255, 0.6)',
+                        update: function() {
+                            this.y += this.speed;
+                            this.life--;
+                            return this.life <= 0;
+                        },
+                        draw: function() {
+                            ctx.save();
+                            ctx.globalAlpha = this.life / 100;
+                            ctx.fillStyle = this.color;
+                            ctx.beginPath();
+                            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.restore();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Update player type
+        function updatePlayerType() {
+            let typeIndex = Math.min(Math.floor((game.level - 1) / 2), fishTypes.length - 1);
+            
+            if (typeIndex !== game.player.typeIndex) {
+                game.player.typeIndex = typeIndex;
+                game.player.type = fishTypes[typeIndex].name;
+                game.player.size = fishTypes[typeIndex].size;
+                game.player.color = fishTypes[typeIndex].color;
+                game.player.speed = fishTypes[typeIndex].speed;
+                game.player.canEat = fishTypes[typeIndex].canEat;
+                game.player.scoreValue = fishTypes[typeIndex].scoreValue;
+                game.player.image = fishImages[fishTypes[typeIndex].name];
+                
+                fishTypeElement.textContent = game.player.type;
+                newFishTypeElement.textContent = game.player.type;
+                
+                // Update level up screen dengan gambar yang sesuai
+                const levelUpFishImage = document.getElementById('levelUpFishImage');
+                levelUpFishImage.innerHTML = ''; // Kosongkan dulu
+                
+                if (fishImages[game.player.type] && fishImages[game.player.type].complete) {
+                    const img = document.createElement('img');
+                    img.src = fishImages[game.player.type].src;
+                    img.alt = game.player.type;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'contain';
+                    levelUpFishImage.appendChild(img);
+                } else {
+                    // Fallback ke emoji jika gambar tidak ada
+                    levelUpFishImage.textContent = fishEmojis[game.player.type] || '🐟';
+                    levelUpFishImage.style.fontSize = '3rem';
+                    levelUpFishImage.style.display = 'flex';
+                    levelUpFishImage.style.alignItems = 'center';
+                    levelUpFishImage.style.justifyContent = 'center';
+                }
+                
+                levelUpScreen.classList.remove('hidden');
+                game.running = false;
+            }
+        }
+        
+        // Update evolution progress
+        function updateEvolutionProgress() {
+            const progress = (game.evolutionProgress / game.requiredEvolution) * 100;
+            evolutionFill.style.width = `${Math.min(progress, 100)}%`;
+            evolutionPercent.textContent = Math.min(Math.floor(progress), 100);
+        }
+        
+        // Update key display
+        function updateKeyDisplay() {
+            const activeClass = 'active';
+            keyW.classList.toggle(activeClass, game.keys.w);
+            keyA.classList.toggle(activeClass, game.keys.a);
+            keyS.classList.toggle(activeClass, game.keys.s);
+            keyD.classList.toggle(activeClass, game.keys.d);
+        }
+        
+        // Update lives display
+        function updateLivesDisplay() {
+            lifeContainer.innerHTML = '';
+            for (let i = 0; i < game.lives; i++) {
+                const lifeIcon = document.createElement('div');
+                lifeIcon.classList.add('life-icon');
+                lifeContainer.appendChild(lifeIcon);
+            }
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Spawn food
+        function spawnFood() {
+            const now = Date.now();
+            let spawnDelay;
+            
+            switch(game.difficulty) {
+                case 'easy': spawnDelay = 500; break;
+                case 'medium': spawnDelay = 400; break;
+                case 'hard': spawnDelay = 300; break;
+            }
+            
+            if (now - game.lastFoodSpawn > spawnDelay / game.gameSpeed && game.foods.length < 25) {
+                game.foods.push(new Food());
+                game.lastFoodSpawn = now;
+            }
+        }
+        
+        // Spawn enemies
+        function spawnEnemy() {
+            const now = Date.now();
+            let spawnDelay;
+            
+            switch(game.difficulty) {
+                case 'easy': spawnDelay = 2000; break;
+                case 'medium': spawnDelay = 1500; break;
+                case 'hard': spawnDelay = 1000; break;
+            }
+            
+            if (now - game.lastEnemySpawn > spawnDelay / game.gameSpeed && game.enemies.length < 15) {
+                game.enemies.push(new Enemy());
+                game.lastEnemySpawn = now;
+            }
+        }
+        
+        // Spawn special enemies
+        function spawnSpecialEnemy() {
+            const now = Date.now();
+            
+            const availableEnemies = specialEnemies.filter(enemy => enemy.spawnLevel <= game.level);
+            
+            if (availableEnemies.length > 0 && now - game.lastSpecialSpawn > 3000 / game.gameSpeed) {
+                let selectedEnemy = null;
+                for (const enemy of availableEnemies) {
+                    if (Math.random() < enemy.spawnChance) {
+                        selectedEnemy = enemy;
+                        break;
+                    }
+                }
+                
+                if (selectedEnemy) {
+                    const enemyIndex = specialEnemies.findIndex(e => e.name === selectedEnemy.name);
+                    game.specialEnemies.push(new SpecialEnemy(enemyIndex));
+                    game.lastSpecialSpawn = now;
+                    
+                    if (selectedEnemy.behavior === 'boss') {
+                        showNotification('⚠️ BOSS MUNCUL! ⚠️');
+                    }
+                }
+            }
+        }
+        
+        // Spawn power-ups
+        function spawnPowerUp() {
+            const now = Date.now();
+            if (now - game.lastPowerUpSpawn > 8000 / game.gameSpeed && game.powerUps.length < 4) {
+                const type = Math.floor(Math.random() * 3);
+                game.powerUps.push(new PowerUp(type));
+                game.lastPowerUpSpawn = now;
+            }
+        }
+        
+        // Increase combo
+        function increaseCombo() {
+            game.combo++;
+            comboElement.textContent = `${game.combo}x`;
+            
+            if (game.comboTimeout) clearTimeout(game.comboTimeout);
+            game.comboTimeout = setTimeout(() => {
+                if (game.combo > 1) {
+                    game.combo = 1;
+                    comboElement.textContent = `${game.combo}x`;
+                }
+            }, 2000);
+        }
+        
+        // Activate power-up
+        function activatePowerUp(type) {
+            switch(type) {
+                case 0: // Speed
+                    game.player.speed *= 1.5;
+                    showNotification('⚡ SPEED BOOST!');
+                    setTimeout(() => {
+                        game.player.speed /= 1.5;
+                    }, 5000);
+                    break;
+                    
+                case 1: // Invincibility
+                    game.invincible = true;
+                    showNotification('🛡️ INVINCIBILITY!');
+                    if (game.invincibleTimeout) clearTimeout(game.invincibleTimeout);
+                    game.invincibleTimeout = setTimeout(() => {
+                        game.invincible = false;
+                    }, 5000);
+                    break;
+                    
+                case 2: // Score multiplier
+                    const oldCombo = game.combo;
+                    game.combo *= 2;
+                    comboElement.textContent = `${game.combo}x`;
+                    showNotification('⭐ SCORE x2!');
+                    setTimeout(() => {
+                        game.combo = oldCombo;
+                        comboElement.textContent = `${game.combo}x`;
+                    }, 7000);
+                    break;
+            }
+        }
+        
+        // Lose life
+        function loseLife() {
+            game.lives--;
+            updateLivesDisplay();
+            
+            game.invincible = true;
+            showNotification('💥 TERKENA!');
+            if (game.invincibleTimeout) clearTimeout(game.invincibleTimeout);
+            game.invincibleTimeout = setTimeout(() => {
+                game.invincible = false;
+            }, 2000);
+            
+            game.combo = 1;
+            comboElement.textContent = `${game.combo}x`;
+            
+            if (game.lives <= 0) {
+                gameOver();
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            game.running = false;
+            finalScoreElement.textContent = game.score;
+            finalLevelElement.textContent = game.level;
+            finalEvolutionElement.textContent = game.player.type;
+            gameOverScreen.classList.remove('hidden');
+            
+            showNotification('💀 GAME OVER! 💀');
+            updateKeyDisplay();
+        }
+        
+        // Game loop
+        function gameLoop(currentTime) {
+            frameCount++;
+            
+            if (!game.running || isPaused) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            if (currentTime - lastTime < 16) {
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            
+            const deltaTime = Math.min((currentTime - lastTime) / 16.67, 2.5);
+            lastTime = currentTime;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+            
+            game.player.update(deltaTime);
+            game.player.draw();
+            
+            spawnFood();
+            spawnEnemy();
+            spawnSpecialEnemy();
+            spawnPowerUp();
+            
+            for (let i = game.foods.length - 1; i >= 0; i--) {
+                const food = game.foods[i];
+                const shouldRemove = food.update(deltaTime);
+                
+                if (game.player.checkFoodCollision(food)) {
+                    const scoreEarned = food.value * game.combo;
+                    game.score += scoreEarned;
+                    game.evolutionProgress += scoreEarned;
+                    scoreElement.textContent = game.score;
+                    
+                    increaseCombo();
+                    
+                    if (game.evolutionProgress >= game.requiredEvolution) {
+                        game.level++;
+                        game.evolutionProgress = 0;
+                        game.requiredEvolution = Math.floor(game.requiredEvolution * 1.35);
+                        levelElement.textContent = game.level;
+                        updatePlayerType();
+                    }
+                    
+                    updateEvolutionProgress();
+                    game.foods.splice(i, 1);
+                } else if (shouldRemove) {
+                    game.foods.splice(i, 1);
+                } else {
+                    food.draw();
+                }
+            }
+            
+            for (let i = game.enemies.length - 1; i >= 0; i--) {
+                const enemy = game.enemies[i];
+                const shouldRemove = enemy.update(deltaTime);
+                
+                if (game.player.checkEnemyCollision(enemy)) {
+                    loseLife();
+                    game.enemies.splice(i, 1);
+                } else if (shouldRemove) {
+                    game.enemies.splice(i, 1);
+                } else {
+                    enemy.draw();
+                }
+            }
+            
+            for (let i = game.specialEnemies.length - 1; i >= 0; i--) {
+                const enemy = game.specialEnemies[i];
+                const shouldRemove = enemy.update(deltaTime);
+                
+                if (game.player.checkSpecialEnemyCollision(enemy)) {
+                    loseLife();
+                    game.specialEnemies.splice(i, 1);
+                } else if (shouldRemove) {
+                    game.specialEnemies.splice(i, 1);
+                } else {
+                    enemy.draw();
+                }
+            }
+            
+            for (let i = game.powerUps.length - 1; i >= 0; i--) {
+                const powerUp = game.powerUps[i];
+                const shouldRemove = powerUp.update();
+                
+                if (game.player.checkPowerUpCollision(powerUp)) {
+                    activatePowerUp(powerUp.type);
+                    game.powerUps.splice(i, 1);
+                } else if (shouldRemove) {
+                    game.powerUps.splice(i, 1);
+                } else {
+                    powerUp.draw();
+                }
+            }
+            
+            // Update and draw particles
+            for (let i = game.particles.length - 1; i >= 0; i--) {
+                const particle = game.particles[i];
+                const shouldRemove = particle.update();
+                
+                if (shouldRemove) {
+                    game.particles.splice(i, 1);
+                } else {
+                    particle.draw();
+                }
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        startButton.addEventListener('click', () => {
+            menuScreen.classList.add('hidden');
+            game.running = true;
+            initGame();
+            requestAnimationFrame(gameLoop);
+        });
+        
+        restartButton.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            game.running = true;
+            initGame();
+            requestAnimationFrame(gameLoop);
+        });
+        
+        restartQuickButton.addEventListener('click', () => {
+            if (game.running) {
+                initGame();
+            } else {
+                gameOverScreen.classList.add('hidden');
+                levelUpScreen.classList.add('hidden');
+                game.running = true;
+                initGame();
+                requestAnimationFrame(gameLoop);
+            }
+        });
+        
+        menuButton.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            levelUpScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+        });
+        
+        continueButton.addEventListener('click', () => {
+            levelUpScreen.classList.add('hidden');
+            game.running = true;
+            requestAnimationFrame(gameLoop);
+        });
+        
+        pauseButton.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseButton.textContent = isPaused ? '▶️ LANJUT' : '⏸️ JEDA';
+            pauseMobileButton.textContent = isPaused ? '▶️' : '⏸️';
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') game.keys.w = true;
+            if (key === 'a' || key === 'arrowleft') game.keys.a = true;
+            if (key === 's' || key === 'arrowdown') game.keys.s = true;
+            if (key === 'd' || key === 'arrowright') game.keys.d = true;
+            
+            if (key === ' ' && game.running) {
+                isPaused = !isPaused;
+                pauseButton.textContent = isPaused ? '▶️ LANJUT' : '⏸️ JEDA';
+                pauseMobileButton.textContent = isPaused ? '▶️' : '⏸️';
+            }
+            
+            updateKeyDisplay();
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') game.keys.w = false;
+            if (key === 'a' || key === 'arrowleft') game.keys.a = false;
+            if (key === 's' || key === 'arrowdown') game.keys.s = false;
+            if (key === 'd' || key === 'arrowright') game.keys.d = false;
+            updateKeyDisplay();
+        });
+        
+        // Start game initialization when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeGame();
+        });
+    </script>
+</body>
+</html>
